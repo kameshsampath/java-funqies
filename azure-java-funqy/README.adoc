@@ -1,0 +1,55 @@
+= Quarkus Azure Java Function
+
+A simple HTTP function using https://quarkus.io[Quarkus], which could be deployed as Azure Functions and could also be used as part of https://keda.sh[KEDA] on https://try.openshift.com[OpenShift]
+
+== Pre-requisites
+
+* Java 11
+* Maven 3.6+
+* Azure CLI
+* Azure Function Tools
+
+== Preparing OpenShift Cluster
+
+We will be using https://docs.openshift.com/aro/4/welcome/index.html[Azure Red Hat OpenShift(ARO)] as the target OpenShift v4 cluster to deploy the functions and integrate it with KEDA. Check this https://docs.microsoft.com/en-in/azure/openshift/tutorial-create-cluster[Get Started] guide to have your cluster deployed in minutes.
+
+Once you have your OpenShift cluster ready, you can https://keda.sh/docs/2.2/deploy/[deploy KEDA] on it.
+
+== Build Application
+
+=== Set the Application Image
+
+The demo application needs to be built and pushed to external container registry, hence we will set the fully qualified application image:
+
+[source,bash]
+----
+export APP_IMAGE="<container.registry.username.repo>"#<.>
+----
+<.> e.g. quay.io/kameshsampath/azure-java-funqy
+
+Once the `$APP_IMAGE` is set run the following command to build and push the Azure function linux container image to external container registry:
+
+[source,bash]
+----
+./mvnw -Djkube.image.name=$APP_IMAGE clean package
+----
+
+== Deploy to OpenShift
+
+Using Azure `func` CLI deploy the `$APP_IMAGE` to the OpenShift cluster:
+
+Create a namespace to deploy the functions:
+
+[source,bash]
+----
+oc new-project funqy-demos
+----
+
+[source,bash]
+----
+func kubernetes deploy --name=azure-java-funqy --image-name=$APP_IMAGE
+----
+
+== License
+
+link:./LICENSE[ASL v2]
